@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>My First threeJS project</title>
+	<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <div id="myThreeJSproject"></div>
+  
+	<script src="three.min.js"></script>
+  <script src="WebVR.js"></script>
+
+<script>
+
+function main() {
+
+  var scene = new THREE.Scene();
+
+  var renderer = new THREE.WebGLRenderer();
+  document.getElementById('myThreeJSproject').appendChild(renderer.domElement);
+  // Enable the WebVR
+  renderer.vr.enabled = true;
+  document.body.appendChild(WEBVR.createButton(renderer));
+
+   var camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.001, 700);
+
+	 // Note - controls have been removed. Couldn't get them working with the new render loop.
+
+
+  //////////////////////////
+  // Scene Elements
+  /////////////////////////
+
+  // Our Earth
+	// Increased values here as it looked chunky in VR
+  var sphereGeometry = new THREE.SphereGeometry(2, 24, 24);
+  var sphereMaterial = new THREE.MeshBasicMaterial({
+    wireframe: false,
+  	map: new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/c/c4/Earthmap1000x500compac.jpg')
+  });
+  var Sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+  // 0, 0, 0 is where the camera is, which puts _you_ in the centre.
+  // Because the earth doesn't have an inner texture, it's transparent.
+	// Had to put the earth at -6 on the Z-axis so it was in front of us
+	// instead of us being in the middle of it
+  Sphere.position.set( 0, 0, -6);
+  scene.add(Sphere);
+
+	// Our Clouds
+	var cloudSphereGeometry = new THREE.SphereGeometry(2.05, 24, 24);
+  var cloudSphereMaterial = new THREE.MeshBasicMaterial({
+  wireframe: false,
+  map: new
+  THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/a/ad/Fair_Weather_Cloud_Map.jpg'),
+	transparent: true,
+  opacity: 0.6});
+
+  var cloudSphere = new THREE.Mesh(cloudSphereGeometry, cloudSphereMaterial);
+  scene.add(cloudSphere);
+  cloudSphere.position.set( 0, 0, -6);
+
+	// Star field
+	var starSphereGeometry = new THREE.SphereGeometry(800, 18, 18);
+  var starSphereMaterial = new THREE.MeshBasicMaterial({
+  wireframe: false,
+  map: new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/0/09/Night_stars_berlin.png'),
+	side: THREE.BackSide,
+	opacity: 0.4,
+  transparent: true});
+  var starSphere = new THREE.Mesh(starSphereGeometry, starSphereMaterial);
+  scene.add(starSphere);
+  starSphere.position.set( 0, 0, 0);
+  //////////////////////////
+
+
+  // Helper function to resize for display as appropriate. Phones come in many sizes, and also it allows it to not look terrible in the browser!
+  function resizeRendererToDisplaySize(renderer) {
+    const canvas = renderer.domElement;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const needResize = canvas.width !== width || canvas.height !== height;
+    if (needResize) {
+      renderer.setSize(width, height, false);
+    }
+    return needResize;
+  }
+
+	// A different type of render loop for the animation is required for WebVR
+  function render(time){
+    time *= 0.001;
+
+    // This bit of logic verifies that we are on a phone, and that we have gone into the VR State, and adjusts as necessary
+    if (!renderer.vr.isPresenting() && resizeRendererToDisplaySize(renderer)) {
+      const canvas = renderer.domElement;
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    }
+
+    Sphere.rotation.y = Sphere.rotation.y + (Math.PI / 440);
+    cloudSphere.rotation.y = cloudSphere.rotation.y - (Math.PI / 1000);
+
+    renderer.render(scene, camera);
+  }
+  renderer.setAnimationLoop(render);
+}
+
+main();
+
+	</script>
+
+</body>
+</html>
